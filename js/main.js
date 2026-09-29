@@ -152,7 +152,6 @@ if (form) {
         setTimeout(() => formSuccess.classList.remove('show'), 15000);
     });
 
-    // Маска телефона
     phoneInput.addEventListener('input', function() {
         let value = this.value.replace(/\D/g, '');
         if (value.length > 11) value = value.slice(0, 11);

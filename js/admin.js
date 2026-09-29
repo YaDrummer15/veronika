@@ -2,11 +2,9 @@
    ЛИЧНЫЙ КАБИНЕТ ГЛАВНОГО ВРАЧА
    ============================================ */
 
-// ===== Настройки входа =====
 const ADMIN_LOGIN = 'admin';
-const ADMIN_PASSWORD = 'veronika2025';
+const ADMIN_PASSWORD = 'veronika2026';
 
-// ===== Элементы =====
 const adminModal = document.getElementById('adminModal');
 const adminLoginBox = document.getElementById('adminLoginBox');
 const adminPanel = document.getElementById('adminPanel');
@@ -27,7 +25,6 @@ let currentFilter = 'all';
 let currentLogFilter = 'all';
 const expandedIds = new Set();
 
-// ===== Открытие/закрытие =====
 function openAdmin() {
     adminModal.classList.add('active');
     document.body.style.overflow = 'hidden';
@@ -72,7 +69,6 @@ document.addEventListener('keydown', (e) => {
     }
 });
 
-// ===== Вход =====
 if (adminLoginForm) {
     adminLoginForm.addEventListener('submit', function(e) {
         e.preventDefault();
@@ -106,7 +102,6 @@ if (logoutBtn) {
     });
 }
 
-// ===== Вкладки =====
 document.querySelectorAll('.admin-tab').forEach(tab => {
     tab.addEventListener('click', function() {
         const tabName = this.dataset.tab;
@@ -122,7 +117,6 @@ document.querySelectorAll('.admin-tab').forEach(tab => {
     });
 });
 
-// ===== Фильтры заявок =====
 document.querySelectorAll('.filter-btn[data-filter]').forEach(btn => {
     btn.addEventListener('click', function() {
         currentFilter = this.dataset.filter;
@@ -132,7 +126,6 @@ document.querySelectorAll('.filter-btn[data-filter]').forEach(btn => {
     });
 });
 
-// ===== Фильтры журнала =====
 document.querySelectorAll('.filter-btn[data-log-filter]').forEach(btn => {
     btn.addEventListener('click', function() {
         currentLogFilter = this.dataset.logFilter;
@@ -142,7 +135,6 @@ document.querySelectorAll('.filter-btn[data-log-filter]').forEach(btn => {
     });
 });
 
-// ===== Действия с заявками =====
 function toggleExpand(id) {
     if (expandedIds.has(id)) {
         expandedIds.delete(id);
@@ -250,7 +242,6 @@ function confirmDelete(id, event) {
     }
 }
 
-// ===== Счётчики =====
 function updateCounters(apps) {
     const counts = {
         all: apps.length,
@@ -275,7 +266,6 @@ function updateCounters(apps) {
     if (tabCountApps) tabCountApps.textContent = counts.all;
 }
 
-// ===== История заявки =====
 function getAppHistory(appId) {
     const log = getLog();
     return log.filter(item => item.appId === appId).reverse();
@@ -302,7 +292,6 @@ function renderAppHistory(appId) {
     }).join('');
 }
 
-// ===== Отрисовка заявок =====
 function renderApplications() {
     const allApps = getApplications();
     updateCounters(allApps);
@@ -431,7 +420,6 @@ function renderApplications() {
     }).join('');
 }
 
-// ===== Отрисовка журнала =====
 function renderJournal() {
     const log = getLog();
     updateJournalBadge();
@@ -480,7 +468,6 @@ function renderJournal() {
     }).join('');
 }
 
-// ===== Экспорт журнала =====
 const exportJournalBtn = document.getElementById('exportJournalBtn');
 if (exportJournalBtn) {
     exportJournalBtn.addEventListener('click', function() {
@@ -503,14 +490,12 @@ if (exportJournalBtn) {
     });
 }
 
-// ===== Глобальные функции для inline-обработчиков =====
 window.toggleExpand = toggleExpand;
 window.changeStatus = changeStatus;
 window.saveReply = saveReply;
 window.deleteReply = deleteReply;
 window.confirmDelete = confirmDelete;
 
-// ===== Инициализация =====
 updateAdminBadge();
 updateJournalBadge();
 setInterval(updateAdminBadge, 5000);

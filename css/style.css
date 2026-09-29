@@ -220,15 +220,22 @@ nav ul li a:hover { color: var(--navy-light); }
 .hero-photo { display: flex; justify-content: center; }
 .photo-wrap { position: relative; }
 .photo-frame {
-    width: 100%; max-width: 420px; aspect-ratio: 4 / 5;
-    overflow: hidden; border-radius: 4px;
-    background-color: var(--navy); box-shadow: var(--shadow-lg); position: relative;
+    width: 100%;
+    max-width: 440px;
+    aspect-ratio: 1 / 1;
+    overflow: hidden;
+    border-radius: 4px;
+    background-color: var(--grey-bg);
+    box-shadow: var(--shadow-lg);
+    position: relative;
+    border: 6px solid var(--white);
 }
-.photo-frame img { width: 100%; height: 100%; object-fit: cover; object-position: center top; }
-.photo-frame::before {
-    content: ''; position: absolute;
-    top: 16px; left: 16px; right: 16px; bottom: 16px;
-    border: 1px solid rgba(255,255,255,0.3); z-index: 1; pointer-events: none;
+.photo-frame img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    object-position: center center;
+    background-color: var(--grey-bg);
 }
 .photo-badge {
     position: absolute; bottom: -20px; right: -20px;
@@ -949,7 +956,7 @@ footer { background-color: var(--navy); color: rgba(255,255,255,0.75); padding: 
     .hero { padding-top: 110px; padding-bottom: 60px; }
     .hero-content h1 { font-size: 1.85rem; }
     .hero-content .specialty { font-size: 0.95rem; }
-    .photo-frame { max-width: 300px; }
+    .photo-frame { max-width: 320px; }
     .photo-badge { padding: 12px 18px; }
     .photo-badge-text strong { font-size: 0.95rem; }
     .services-grid { grid-template-columns: 1fr; }
@@ -986,7 +993,7 @@ footer { background-color: var(--navy); color: rgba(255,255,255,0.75); padding: 
     .btn { padding: 12px 22px; font-size: 0.88rem; }
     .hero-buttons { flex-direction: column; width: 100%; }
     .hero-buttons .btn { width: 100%; }
-    .photo-frame { max-width: 240px; }
+    .photo-frame { max-width: 260px; }
     .admin-header .admin-actions { width: 100%; }
     .admin-header .btn-logout,
     .admin-header .btn-close-panel { flex: 1; justify-content: center; }

@@ -5,7 +5,6 @@
 const STORAGE_KEY = 'shumilovskaya_applications';
 const LOG_KEY = 'shumilovskaya_log';
 
-// Статусы
 const STATUS_LABELS = {
     'new': { label: 'Новая', icon: 'fa-circle' },
     'progress': { label: 'На рассмотрении', icon: 'fa-hourglass-half' },
@@ -13,7 +12,6 @@ const STATUS_LABELS = {
     'reject': { label: 'Отказано', icon: 'fa-times-circle' }
 };
 
-// Типы событий для логирования
 const LOG_TYPES = {
     'create': { label: 'Создание заявки', icon: 'fa-plus-circle', class: 'log-create' },
     'status': { label: 'Смена статуса', icon: 'fa-exchange-alt', class: 'log-status' },
@@ -22,7 +20,6 @@ const LOG_TYPES = {
     'view': { label: 'Просмотр', icon: 'fa-eye', class: 'log-view' }
 };
 
-// ===== Заявки =====
 function getApplications() {
     try {
         const data = localStorage.getItem(STORAGE_KEY);
@@ -64,7 +61,6 @@ function updateApplication(id, updates) {
     return { oldApp, newApp: apps[idx] };
 }
 
-// ===== Логи =====
 function getLog() {
     try {
         const data = localStorage.getItem(LOG_KEY);
@@ -92,7 +88,6 @@ function logEvent(type, app, details) {
     updateJournalBadge();
 }
 
-// ===== Утилиты =====
 function generateAppNumber() {
     return Math.floor(100000 + Math.random() * 900000).toString();
 }
@@ -132,7 +127,6 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
-// ===== Счётчики =====
 function updateAdminBadge() {
     const apps = getApplications();
     const newCount = apps.filter(a => (a.status || 'new') === 'new').length;

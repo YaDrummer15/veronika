@@ -116,7 +116,7 @@ if (form) {
     nameInput.addEventListener('input', validateName);
     phoneInput.addEventListener('input', validatePhone);
 
-    form.addEventListener('submit', function(e) {
+    form.addEventListener('submit', async function(e) {
         e.preventDefault();
         const isNameValid = validateName();
         const isPhoneValid = validatePhone();
@@ -125,7 +125,6 @@ if (form) {
         const appNumber = generateAppNumber();
 
         const application = {
-            id: Date.now().toString(),
             number: appNumber,
             name: nameInput.value.trim(),
             phone: phoneInput.value,
@@ -136,7 +135,9 @@ if (form) {
             reply: '',
             replyDate: null
         };
-        addApplication(application);
+
+        const success = await addApplication(application);
+        if (!success) return;
 
         const adminPanel = document.getElementById('adminPanel');
         if (adminPanel && adminPanel.classList.contains('active')) {
@@ -205,7 +206,7 @@ const checkQuery = document.getElementById('checkQuery');
 const checkError = document.getElementById('checkError');
 const checkResult = document.getElementById('checkResult');
 
-function openCheck() {
+async function openCheck() {
     checkModal.classList.add('active');
     document.body.style.overflow = 'hidden';
     if (mobileMenu && mobileMenu.classList.contains('active')) toggleMenu();
@@ -213,6 +214,7 @@ function openCheck() {
     checkError.classList.remove('show');
     checkResult.classList.remove('show');
     checkResult.innerHTML = '';
+    await loadApplicationsFromDB();
     setTimeout(() => checkQuery.focus(), 100);
 }
 
@@ -321,7 +323,7 @@ function renderCheckResult(app) {
 }
 
 if (checkForm) {
-    checkForm.addEventListener('submit', function(e) {
+    checkForm.addEventListener('submit', async function(e) {
         e.preventDefault();
         const query = checkQuery.value.trim();
 
@@ -334,6 +336,7 @@ if (checkForm) {
             return;
         }
 
+        await loadApplicationsFromDB();
         const app = findApplication(query);
         if (app) {
             renderCheckResult(app);

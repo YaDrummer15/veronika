@@ -25,7 +25,7 @@ let currentFilter = 'all';
 let currentLogFilter = 'all';
 const expandedIds = new Set();
 
-function openAdmin() {
+async function openAdmin() {
     adminModal.classList.add('active');
     document.body.style.overflow = 'hidden';
     if (mobileMenu && mobileMenu.classList.contains('active')) toggleMenu();
@@ -33,6 +33,8 @@ function openAdmin() {
     if (isLoggedIn) {
         adminLoginBox.style.display = 'none';
         adminPanel.classList.add('active');
+        await loadApplicationsFromDB();
+        await loadLogsFromDB();
         renderApplications();
         renderJournal();
         updateJournalBadge();
@@ -70,7 +72,7 @@ document.addEventListener('keydown', (e) => {
 });
 
 if (adminLoginForm) {
-    adminLoginForm.addEventListener('submit', function(e) {
+    adminLoginForm.addEventListener('submit', async function(e) {
         e.preventDefault();
         const login = adminLogin.value.trim();
         const password = adminPassword.value;
@@ -80,6 +82,8 @@ if (adminLoginForm) {
             adminError.classList.remove('show');
             adminLoginBox.style.display = 'none';
             adminPanel.classList.add('active');
+            await loadApplicationsFromDB();
+            await loadLogsFromDB();
             renderApplications();
             renderJournal();
             updateJournalBadge();
@@ -103,15 +107,17 @@ if (logoutBtn) {
 }
 
 document.querySelectorAll('.admin-tab').forEach(tab => {
-    tab.addEventListener('click', function() {
+    tab.addEventListener('click', async function() {
         const tabName = this.dataset.tab;
         document.querySelectorAll('.admin-tab').forEach(t => t.classList.remove('active'));
         document.querySelectorAll('.admin-tab-panel').forEach(p => p.classList.remove('active'));
         this.classList.add('active');
         document.getElementById('tab-' + tabName).classList.add('active');
         if (tabName === 'journal') {
+            await loadLogsFromDB();
             renderJournal();
         } else {
+            await loadApplicationsFromDB();
             renderApplications();
         }
     });
@@ -135,30 +141,27 @@ document.querySelectorAll('.filter-btn[data-log-filter]').forEach(btn => {
     });
 });
 
-function toggleExpand(id) {
+async function toggleExpand(id) {
     if (expandedIds.has(id)) {
         expandedIds.delete(id);
     } else {
         expandedIds.add(id);
-        const app = getApplications().find(a => a.id === id);
+        const app = appsCache.find(a => a.id === id);
         if (app && (!app.status || app.status === 'new')) {
-            updateApplication(id, { status: 'progress' });
-            logEvent('status', app, `Статус изменён: «Новая» → «На рассмотрении» (автоматически при просмотре)`);
+            await updateApplication(id, { status: 'progress' });
+            await logEvent('status', app, `Статус изменён: «Новая» → «На рассмотрении» (автоматически при просмотре)`);
         } else if (app) {
-            logEvent('view', app, `Главный врач просмотрел заявку`);
+            await logEvent('view', app, `Главный врач просмотрел заявку`);
         }
     }
     renderApplications();
     const journalTab = document.getElementById('tab-journal');
-    if (journalTab && journalTab.classList.contains('active')) {
-        renderJournal();
-    }
+    if (journalTab && journalTab.classList.contains('active')) renderJournal();
 }
 
-function changeStatus(id, status, event) {
+async function changeStatus(id, status, event) {
     if (event) event.stopPropagation();
-    const apps = getApplications();
-    const app = apps.find(a => a.id === id);
+    const app = appsCache.find(a => a.id === id);
     if (!app) return;
 
     const oldStatus = app.status || 'new';
@@ -167,14 +170,14 @@ function changeStatus(id, status, event) {
     const oldLabel = STATUS_LABELS[oldStatus]?.label || oldStatus;
     const newLabel = STATUS_LABELS[status]?.label || status;
 
-    updateApplication(id, { status: status });
-    logEvent('status', app, `Статус изменён: «${oldLabel}» → «${newLabel}»`);
+    await updateApplication(id, { status: status });
+    await logEvent('status', app, `Статус изменён: «${oldLabel}» → «${newLabel}»`);
     renderApplications();
     const journalTab = document.getElementById('tab-journal');
     if (journalTab && journalTab.classList.contains('active')) renderJournal();
 }
 
-function saveReply(id, event) {
+async function saveReply(id, event) {
     if (event) event.stopPropagation();
     const textarea = document.getElementById('reply-' + id);
     if (!textarea) return;
@@ -184,28 +187,27 @@ function saveReply(id, event) {
         return;
     }
 
-    const apps = getApplications();
-    const app = apps.find(a => a.id === id);
+    const app = appsCache.find(a => a.id === id);
     if (!app) return;
 
     const isEdit = !!(app.reply && app.reply.trim());
     const oldStatus = app.status || 'new';
 
-    updateApplication(id, {
+    await updateApplication(id, {
         reply: text,
         replyDate: new Date().toISOString(),
         status: 'done'
     });
 
     if (isEdit) {
-        logEvent('reply', app, `Ответ врача отредактирован`);
+        await logEvent('reply', app, `Ответ врача отредактирован`);
     } else {
-        logEvent('reply', app, `Оставлен ответ пациенту`);
+        await logEvent('reply', app, `Оставлен ответ пациенту`);
     }
 
     if (oldStatus !== 'done') {
         const oldLabel = STATUS_LABELS[oldStatus]?.label || oldStatus;
-        logEvent('status', app, `Статус изменён: «${oldLabel}» → «Рассмотрено» (при сохранении ответа)`);
+        await logEvent('status', app, `Статус изменён: «${oldLabel}» → «Рассмотрено» (при сохранении ответа)`);
     }
 
     renderApplications();
@@ -213,29 +215,27 @@ function saveReply(id, event) {
     if (journalTab && journalTab.classList.contains('active')) renderJournal();
 }
 
-function deleteReply(id, event) {
+async function deleteReply(id, event) {
     if (event) event.stopPropagation();
     if (!confirm('Удалить сохранённый ответ?')) return;
-    const apps = getApplications();
-    const app = apps.find(a => a.id === id);
+    const app = appsCache.find(a => a.id === id);
     if (!app) return;
 
-    updateApplication(id, { reply: '', replyDate: null });
-    logEvent('reply', app, `Ответ врача удалён`);
+    await updateApplication(id, { reply: '', replyDate: null });
+    await logEvent('reply', app, `Ответ врача удалён`);
     renderApplications();
     const journalTab = document.getElementById('tab-journal');
     if (journalTab && journalTab.classList.contains('active')) renderJournal();
 }
 
-function confirmDelete(id, event) {
+async function confirmDelete(id, event) {
     if (event) event.stopPropagation();
-    const apps = getApplications();
-    const app = apps.find(a => a.id === id);
+    const app = appsCache.find(a => a.id === id);
     if (!app) return;
 
     if (confirm(`Удалить заявку №${app.number} от ${app.name}?`)) {
         expandedIds.delete(id);
-        deleteApplication(id);
+        await deleteApplication(id);
         renderApplications();
         const journalTab = document.getElementById('tab-journal');
         if (journalTab && journalTab.classList.contains('active')) renderJournal();

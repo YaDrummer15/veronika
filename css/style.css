@@ -29,9 +29,6 @@
     --status-reject-color: #97362b;
 }
 
-/* ============================================
-   БАЗОВЫЕ СТИЛИ
-   ============================================ */
 * { margin: 0; padding: 0; box-sizing: border-box; }
 html { scroll-behavior: smooth; }
 body {
@@ -53,9 +50,6 @@ img { max-width: 100%; display: block; }
 .section-subtitle { text-align: center; font-size: 1rem; color: var(--grey-muted); margin-bottom: 56px; max-width: 620px; margin-left: auto; margin-right: auto; }
 .section-divider { width: 60px; height: 3px; background-color: var(--accent); margin: 16px auto 56px; }
 
-/* ============================================
-   КНОПКИ
-   ============================================ */
 .btn {
     display: inline-block; padding: 13px 28px;
     font-family: var(--font-body); font-weight: 600; font-size: 0.9rem;
@@ -68,9 +62,6 @@ img { max-width: 100%; display: block; }
 .btn-outline { background-color: transparent; color: var(--navy); border-color: var(--navy); }
 .btn-outline:hover { background-color: var(--navy); color: var(--white); }
 
-/* ============================================
-   АНИМАЦИИ
-   ============================================ */
 .fade-in { opacity: 0; transform: translateY(24px); transition: opacity 0.6s ease, transform 0.6s ease; }
 .fade-in.visible { opacity: 1; transform: translateY(0); }
 
@@ -150,9 +141,6 @@ nav ul li a:hover { color: var(--navy-light); }
 }
 .btn-check:hover { border-color: var(--accent); color: var(--accent); }
 
-/* ============================================
-   БУРГЕР-МЕНЮ
-   ============================================ */
 .burger {
     display: none; flex-direction: column; gap: 5px;
     cursor: pointer; background: none; border: none; padding: 8px; z-index: 1100;
@@ -432,9 +420,6 @@ footer { background-color: var(--navy); color: rgba(255,255,255,0.75); padding: 
 .footer-bottom a { color: rgba(255,255,255,0.6); transition: var(--transition); }
 .footer-bottom a:hover { color: var(--accent-light); }
 
-/* ============================================
-   КНОПКА НАВЕРХ
-   ============================================ */
 .scroll-top {
     position: fixed; bottom: 30px; right: 30px;
     width: 44px; height: 44px; border-radius: 4px;
@@ -447,9 +432,6 @@ footer { background-color: var(--navy); color: rgba(255,255,255,0.75); padding: 
 .scroll-top.show { opacity: 1; visibility: visible; }
 .scroll-top:hover { background-color: var(--navy-dark); }
 
-/* ============================================
-   МОДАЛЬНЫЕ ОКНА
-   ============================================ */
 .modal {
     display: none; position: fixed; inset: 0;
     background-color: rgba(21, 42, 69, 0.65); z-index: 2000;
@@ -484,9 +466,6 @@ footer { background-color: var(--navy); color: rgba(255,255,255,0.75); padding: 
 .modal-box h3 { font-size: 1.3rem; text-align: center; margin-bottom: 6px; color: var(--navy); font-family: var(--font-heading); }
 .modal-box .modal-subtitle { text-align: center; font-size: 0.85rem; color: var(--grey-muted); margin-bottom: 32px; }
 
-/* ============================================
-   ЛИЧНЫЙ КАБИНЕТ
-   ============================================ */
 .admin-panel {
     display: none; background-color: var(--white);
     border-radius: 4px; width: 100%; max-width: 1200px;
@@ -534,10 +513,7 @@ footer { background-color: var(--navy); color: rgba(255,255,255,0.75); padding: 
     border-bottom: 3px solid transparent;
 }
 .admin-tab:hover { color: var(--white); }
-.admin-tab.active {
-    color: var(--white);
-    border-bottom-color: var(--accent-light);
-}
+.admin-tab.active { color: var(--white); border-bottom-color: var(--accent-light); }
 .admin-tab .tab-count {
     background-color: rgba(255,255,255,0.12);
     padding: 1px 7px; border-radius: 3px;
@@ -603,9 +579,6 @@ footer { background-color: var(--navy); color: rgba(255,255,255,0.75); padding: 
 }
 .admin-body h4 i { color: var(--navy); }
 
-/* ============================================
-   ЗАЯВКИ
-   ============================================ */
 .applications-list { display: flex; flex-direction: column; gap: 10px; }
 
 .application-item {
@@ -734,7 +707,6 @@ footer { background-color: var(--navy); color: rgba(255,255,255,0.75); padding: 
     margin-top: 10px; display: flex; align-items: center; gap: 6px;
 }
 
-/* История заявки */
 .app-history {
     max-height: 220px; overflow-y: auto;
     background-color: var(--grey-bg);
@@ -765,9 +737,6 @@ footer { background-color: var(--navy); color: rgba(255,255,255,0.75); padding: 
     margin-top: 2px; display: block;
 }
 
-/* ============================================
-   ЖУРНАЛ СОБЫТИЙ
-   ============================================ */
 .journal-filters {
     display: flex; gap: 8px; padding: 18px 32px 16px;
     background-color: var(--grey-bg); flex-wrap: wrap;
@@ -847,9 +816,6 @@ footer { background-color: var(--navy); color: rgba(255,255,255,0.75); padding: 
     margin-bottom: 4px;
 }
 
-/* ============================================
-   ПУСТОЕ СОСТОЯНИЕ
-   ============================================ */
 .empty-state {
     text-align: center; padding: 60px 20px; color: var(--grey-muted);
 }
@@ -860,9 +826,6 @@ footer { background-color: var(--navy); color: rgba(255,255,255,0.75); padding: 
 .empty-state p { font-size: 0.95rem; margin-bottom: 6px; color: var(--grey-text); }
 .empty-state small { font-size: 0.82rem; color: var(--grey-muted); }
 
-/* ============================================
-   ПРОВЕРКА ЗАЯВКИ ПАЦИЕНТОМ
-   ============================================ */
 .check-result {
     display: none; margin-top: 24px; padding-top: 24px;
     border-top: 1px solid var(--grey-border);
@@ -925,9 +888,6 @@ footer { background-color: var(--navy); color: rgba(255,255,255,0.75); padding: 
 .check-error.show { display: block; }
 .check-error i { margin-right: 6px; }
 
-/* ============================================
-   МЕДИАЗАПРОСЫ
-   ============================================ */
 @media (max-width: 992px) {
     .section { padding: 64px 0; }
     .hero-grid { grid-template-columns: 1fr; gap: 50px; text-align: center; }

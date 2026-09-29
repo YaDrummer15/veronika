@@ -1,10 +1,28 @@
 /* ============================================
-   РАБОТА С ЗАЯВКАМИ И ЛОГАМИ
+   РАБОТА С ЗАЯВКАМИ И ЛОГАМИ (Firebase Firestore)
    ============================================ */
 
-const STORAGE_KEY = 'shumilovskaya_applications';
-const LOG_KEY = 'shumilovskaya_log';
+// ===== 1. Ваш конфиг Firebase =====
+const firebaseConfig = {
+    apiKey: "AIzaSyCKhtVVFg8YjpLnsm7gOR3WyX8Dj8ijbqM",
+    authDomain: "vdasdas-b437d.firebaseapp.com",
+    projectId: "vdasdas-b437d",
+    storageBucket: "vdasdas-b437d.firebasestorage.app",
+    messagingSenderId: "252990860062",
+    appId: "1:252990860062:web:8872f57e98a0bab92a770f"
+};
 
+// ===== 2. Инициализация Firebase =====
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+const appsCollection = db.collection('applications');
+const logsCollection = db.collection('logs');
+
+// ===== 3. Кэш локально =====
+let appsCache = [];
+let logsCache = [];
+
+// ===== 4. Статусы =====
 const STATUS_LABELS = {
     'new': { label: 'Новая', icon: 'fa-circle' },
     'progress': { label: 'На рассмотрении', icon: 'fa-hourglass-half' },
@@ -20,74 +38,111 @@ const LOG_TYPES = {
     'view': { label: 'Просмотр', icon: 'fa-eye', class: 'log-view' }
 };
 
-function getApplications() {
+// ===== 5. Загрузка данных =====
+async function loadApplicationsFromDB() {
     try {
-        const data = localStorage.getItem(STORAGE_KEY);
-        return data ? JSON.parse(data) : [];
-    } catch (e) { return []; }
-}
-
-function saveApplications(apps) {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(apps));
-}
-
-function addApplication(app) {
-    const apps = getApplications();
-    apps.unshift(app);
-    saveApplications(apps);
-    updateAdminBadge();
-    logEvent('create', app, `Поступила новая заявка на «${app.service}»`);
-}
-
-function deleteApplication(id) {
-    let apps = getApplications();
-    const app = apps.find(a => a.id === id);
-    apps = apps.filter(a => a.id !== id);
-    saveApplications(apps);
-    updateAdminBadge();
-    if (app) {
-        logEvent('delete', app, `Заявка удалена из системы`);
+        const snapshot = await appsCollection.orderBy('date', 'desc').get();
+        appsCache = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        updateAdminBadge();
+        const adminPanel = document.getElementById('adminPanel');
+        if (adminPanel && adminPanel.classList.contains('active')) {
+            if (typeof renderApplications === 'function') renderApplications();
+        }
+    } catch (e) {
+        console.error('Ошибка загрузки заявок:', e);
     }
 }
 
-function updateApplication(id, updates) {
-    const apps = getApplications();
-    const idx = apps.findIndex(a => a.id === id);
-    if (idx === -1) return null;
-    const oldApp = Object.assign({}, apps[idx]);
-    apps[idx] = Object.assign({}, apps[idx], updates);
-    saveApplications(apps);
-    updateAdminBadge();
-    return { oldApp, newApp: apps[idx] };
+async function loadLogsFromDB() {
+    try {
+        const snapshot = await logsCollection.orderBy('date', 'desc').limit(500).get();
+        logsCache = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        updateJournalBadge();
+        const journalTab = document.getElementById('tab-journal');
+        if (journalTab && journalTab.classList.contains('active')) {
+            if (typeof renderJournal === 'function') renderJournal();
+        }
+    } catch (e) {
+        console.error('Ошибка загрузки логов:', e);
+    }
+}
+
+// ===== 6. Геттеры =====
+function getApplications() {
+    return appsCache;
 }
 
 function getLog() {
+    return logsCache;
+}
+
+// ===== 7. Добавление заявки =====
+async function addApplication(app) {
     try {
-        const data = localStorage.getItem(LOG_KEY);
-        return data ? JSON.parse(data) : [];
-    } catch (e) { return []; }
+        const docRef = await appsCollection.add(app);
+        app.id = docRef.id;
+        appsCache.unshift(app);
+        updateAdminBadge();
+        await logEvent('create', app, `Поступила новая заявка на «${app.service}»`);
+        return true;
+    } catch (e) {
+        console.error('Ошибка добавления заявки:', e);
+        alert('Не удалось отправить заявку. Проверьте интернет и попробуйте снова.');
+        return false;
+    }
 }
 
-function saveLog(log) {
-    localStorage.setItem(LOG_KEY, JSON.stringify(log));
+// ===== 8. Обновление заявки =====
+async function updateApplication(id, updates) {
+    try {
+        await appsCollection.doc(id).update(updates);
+        const idx = appsCache.findIndex(a => a.id === id);
+        if (idx !== -1) {
+            appsCache[idx] = Object.assign({}, appsCache[idx], updates);
+        }
+        updateAdminBadge();
+    } catch (e) {
+        console.error('Ошибка обновления заявки:', e);
+    }
 }
 
-function logEvent(type, app, details) {
-    const log = getLog();
-    log.unshift({
-        id: Date.now().toString() + Math.random().toString(36).slice(2, 6),
+// ===== 9. Удаление заявки =====
+async function deleteApplication(id) {
+    try {
+        const app = appsCache.find(a => a.id === id);
+        await appsCollection.doc(id).delete();
+        appsCache = appsCache.filter(a => a.id !== id);
+        updateAdminBadge();
+        if (app) {
+            await logEvent('delete', app, `Заявка удалена из системы`);
+        }
+    } catch (e) {
+        console.error('Ошибка удаления заявки:', e);
+    }
+}
+
+// ===== 10. Логирование =====
+async function logEvent(type, app, details) {
+    const logItem = {
         type: type,
         appId: app.id,
         appNumber: app.number || '—',
         appName: app.name || '—',
         details: details || '',
         date: new Date().toISOString()
-    });
-    if (log.length > 500) log.length = 500;
-    saveLog(log);
-    updateJournalBadge();
+    };
+    try {
+        const docRef = await logsCollection.add(logItem);
+        logItem.id = docRef.id;
+        logsCache.unshift(logItem);
+        if (logsCache.length > 500) logsCache.length = 500;
+        updateJournalBadge();
+    } catch (e) {
+        console.error('Ошибка логирования:', e);
+    }
 }
 
+// ===== 11. Утилиты =====
 function generateAppNumber() {
     return Math.floor(100000 + Math.random() * 900000).toString();
 }
@@ -127,9 +182,9 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
+// ===== 12. Счётчики =====
 function updateAdminBadge() {
-    const apps = getApplications();
-    const newCount = apps.filter(a => (a.status || 'new') === 'new').length;
+    const newCount = appsCache.filter(a => (a.status || 'new') === 'new').length;
     const badge = document.getElementById('adminBadge');
     const badgeMobile = document.getElementById('adminBadgeMobile');
     [badge, badgeMobile].forEach(b => {
@@ -144,7 +199,16 @@ function updateAdminBadge() {
 }
 
 function updateJournalBadge() {
-    const log = getLog();
     const tabCountJournal = document.getElementById('tabCountJournal');
-    if (tabCountJournal) tabCountJournal.textContent = log.length;
+    if (tabCountJournal) tabCountJournal.textContent = logsCache.length;
 }
+
+// ===== 13. Автообновление каждые 10 секунд =====
+setInterval(() => {
+    loadApplicationsFromDB();
+    loadLogsFromDB();
+}, 10000);
+
+// ===== 14. Первоначальная загрузка =====
+loadApplicationsFromDB();
+loadLogsFromDB();
